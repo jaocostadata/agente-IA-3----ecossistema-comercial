@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sinapta · Agente de Atendimento Trabalhista — Demo</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">S</span>
+      <div>
+        <strong>SINAPTA</strong> <span class="muted">· Agente de Atendimento</span>
+        <div class="sub" id="escritorio">—</div>
+      </div>
+    </div>
+    <div class="clock">
+      <span class="muted">Relógio simulado</span>
+      <strong id="clock">—</strong>
+      <span class="pill" id="ia">IA: —</span>
+    </div>
+    <div class="actions">
+      <button data-hour="22" title="Simula um lead chegando à noite">🌙 Ir para 22h</button>
+      <button id="adv24" title="Avança 24h e dispara follow-ups vencidos">⏩ +24h (follow-up)</button>
+      <button id="rel8" title="Vai para as 8h do próximo dia e envia o relatório diário">☀️ Relatório das 8h</button>
+      <button id="reset" class="ghost" title="Apaga todos os dados da demo">↺ Reiniciar</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <!-- Celular do lead -->
+    <section class="col">
+      <div class="col-title">📱 WhatsApp do <b>cliente (lead)</b></div>
+      <div class="scenarios" id="scenarios"></div>
+      <div class="phone">
+        <div class="wa-header">
+          <div class="avatar law">⚖️</div>
+          <div class="who">
+            <div class="name" id="leadChatName">Almeida &amp; Costa Advocacia</div>
+            <div class="status" id="leadStatus">online</div>
+          </div>
+          <select id="leadSelect" title="Conversas"></select>
+        </div>
+        <div class="wa-body" id="leadChat"></div>
+        <form class="wa-input" id="sendForm">
+          <input id="msg" autocomplete="off" placeholder="Digite como se fosse o cliente…" />
+          <button type="submit" aria-label="Enviar">➤</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Celular do advogado -->
+    <section class="col">
+      <div class="col-title">👩‍⚖️ WhatsApp do <b>advogado</b> <span class="muted">(briefings, alertas, relatório)</span></div>
+      <div class="phone">
+        <div class="wa-header">
+          <div class="avatar sinapta">S</div>
+          <div class="who">
+            <div class="name">Sinapta · Assistente</div>
+            <div class="status" id="lawyerStatus">—</div>
+          </div>
+        </div>
+        <div class="wa-body" id="lawyerChat"></div>
+      </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section class="col dash">
+      <div class="col-title">📊 Dashboard de performance</div>
+      <div class="kpis" id="kpis"></div>
+      <div class="card">
+        <div class="card-title">Classificação dos leads</div>
+        <div class="tempbar" id="tempbar"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Leads</div>
+        <table class="leads"><thead><tr><th>Lead</th><th>Assunto</th><th>Class.</th><th>Etapa</th></tr></thead><tbody id="leadsTable"></tbody></table>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 Agenda (Google Calendar)</div>
+        <ul class="agenda" id="agenda"></ul>
+      </div>
+      <div class="card flow">
+        <div class="card-title">Fluxo do agente</div>
+        <ol id="flowSteps">
+          <li data-s="novo">Lead chega</li><li data-s="nome">Boas-vindas</li><li data-s="qualif">Qualificação</li>
+          <li data-s="class">Classificação</li><li data-s="nutr">Nutrição</li><li data-s="brief">Briefing</li><li data-s="fu">Follow-up</li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
