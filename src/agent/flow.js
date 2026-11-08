@@ -10,6 +10,10 @@ import { gerarBriefing, alertaUrgente, problemasTxt, fmtMeses } from './briefing
 import { proximosHorarios, agendar, formatar } from '../calendar.js';
 import { complete, completeJson } from '../llm/index.js';
 import { SYSTEM_PROMPT } from './prompt.js';
+import { fundamentos, buscar, trecho, disponivel as cltDisponivel, contextoLLM } from '../knowledge/clt.js';
+
+// System prompt + trechos da CLT relevantes para o lead (RAG)
+const sistema = (lead, pergunta = '') => SYSTEM_PROMPT + '\n\n' + contextoLLM(lead.data.problemas, pergunta);
 
 const QUALIFICACAO = ['nome', 'problema', 'situacao', 'saida', 'vinculo', 'carteira', 'provas'];
 const SEM_FOLLOWUP = new Set(['agendado', 'encerrado']);
@@ -143,6 +147,15 @@ function faq(lead, ex) {
     out.push('Sobre valores: a consulta serve para o advogado entender seu caso, e as condições de honorários são explicadas por ele com total transparência nesse momento. Nada é cobrado por aqui 😉');
   if (ex.intencoes.includes('promessa'))
     out.push('Eu não consigo te dizer se você vai ganhar ou quanto vai receber — isso depende da análise do advogado com seus documentos (e nenhum advogado sério promete resultado). Mas posso adiantar tudo para que ele avalie seu caso rapidinho.');
+  if (ex.intencoes.includes('lei')) {
+    if (!cltDisponivel()) out.push('O advogado vai te explicar com calma a base legal do seu caso na consulta 🙂');
+    else {
+      let fs = fundamentos(lead.data.problemas, { max: 2 });
+      if (!fs.length) fs = buscar(ex.textoOriginal || '', 2).map((a) => trecho({ art: a.numero })).filter(Boolean);
+      if (fs.length) out.push(['📖 O que diz a CLT:', ...fs.map((f) => `*${f.rotulo}:* “${f.texto}”`), '', '_Texto informativo — o advogado avalia como isso se aplica ao seu caso._'].join('\n'));
+      else out.push('Me conta um pouco mais do seu caso que eu te mostro o que a CLT diz sobre isso 🙂');
+    }
+  }
   if (ex.intencoes.includes('endereco'))
     out.push(`Atendemos online (videochamada) e presencialmente em: ${escritorio.endereco}.`);
   return out;
@@ -169,7 +182,8 @@ function finalizar(lead) {
   } else if (c.prescricao?.status === 'critico') {
     out.push(`⚠️ *Atenção:* a lei dá 2 anos após a saída para entrar com a ação, e no seu caso restam cerca de *${fmtMeses(c.prescricao.mesesRestantes)}*. Por isso vou priorizar o seu atendimento.`);
   } else {
-    out.push(`💡 Uma informação importante: ${CONTEUDO[p]}`);
+    const f = fundamentos([p], { max: 1 })[0];
+    out.push(`💡 Uma informação importante: ${CONTEUDO[p]}${f ? `\n📖 Base legal: ${f.rotulo.replace('Art.', 'art.')} da CLT.` : ''}`);
   }
   if (!d.provas && c.temperatura !== 'frio') out.push('Dica: se puder, comece a reunir prints, contracheques e nomes de colegas que viram o que aconteceu. Isso ajuda muito na análise.');
 
@@ -283,6 +297,7 @@ export async function handleMessage(phone, text, { pushName } = {}) {
   }
 
   const ex = extractAll(text, at);
+  ex.textoOriginal = text;
   const n = norm(text);
   const out = [];
   const primeiraVez = lead.stage === 'novo';
@@ -328,7 +343,7 @@ export async function handleMessage(phone, text, { pushName } = {}) {
     if (!primeiraVez) {
       const r = await responderEtapa(lead, text, ex);
       if (!r.ok) {
-        const ia = await complete({ tier: 'flash', system: SYSTEM_PROMPT,
+        const ia = await complete({ tier: 'flash', system: sistema(lead, text),
           prompt: `Conversa:\n${lead.messages.slice(-6).map((m) => `${m.from}: ${m.text}`).join('\n')}\n\nResponda à última mensagem do cliente em até 2 frases e repita, com gentileza, esta pergunta: "${pergunta(lead.stage, lead)}"` });
         out.push(ia || r.retry);
         return finish(lead, out, t0);
@@ -358,12 +373,12 @@ export async function handleMessage(phone, text, { pushName } = {}) {
     else if (!out.length) out.push('Qual desses horários fica melhor pra você? Responde com *1*, *2* ou *3* — ou me diga se prefere outro dia.');
   } else if (lead.stage === 'nutricao') {
     if (ex.intencoes.includes('sim') || ex.intencoes.includes('agendar')) out.push(oferecerHorarios(lead, 'Claro! Tenho estes horários:'));
-    else if (!out.length) out.push((await complete({ tier: 'flash', system: SYSTEM_PROMPT, prompt: `Cliente: ${text}\nResponda brevemente.` })) ||
+    else if (!out.length) out.push((await complete({ tier: 'flash', system: sistema(lead, text), prompt: `Cliente: ${text}\nResponda brevemente.` })) ||
       'Anotado! Se quiser que o advogado analise seu caso, posso agendar uma consulta — é só pedir 🙂');
   } else if (lead.stage === 'agendado') {
     if (!out.length) {
       pushLawyer({ tipo: 'nota', leadPhone: phone, at: at.toISOString(), text: `📝 ${lead.data.nome} (consulta ${formatar(lead.appointment.inicio)}) enviou: "${text}"` });
-      out.push((await complete({ tier: 'flash', system: SYSTEM_PROMPT, prompt: `O cliente já tem consulta agendada em ${formatar(lead.appointment.inicio)}. Ele escreveu: "${text}". Responda brevemente.` })) ||
+      out.push((await complete({ tier: 'flash', system: sistema(lead, text), prompt: `O cliente já tem consulta agendada em ${formatar(lead.appointment.inicio)}. Ele escreveu: "${text}". Responda brevemente.` })) ||
         `Anotado, ${primeiroNome(lead)}! Já repassei para ${advResponsavel(lead)}. Sua consulta continua confirmada para ${formatar(lead.appointment.inicio)} ✅`);
     }
   }

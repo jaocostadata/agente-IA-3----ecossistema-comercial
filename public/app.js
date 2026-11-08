@@ -58,6 +58,8 @@ function render() {
   $('#escritorio').textContent = `${S.escritorio.nome} · ${S.escritorio.cidade}`;
   $('#clock').textContent = new Date(S.now).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', ...TZ() });
   $('#ia').textContent = `IA: ${S.ia.flash === S.ia.pro ? S.ia.flash : S.ia.flash + ' / ' + S.ia.pro}`;
+  const kb = S.conhecimento;
+  $('#kb').textContent = kb?.totalArtigos ? `📚 CLT: ${kb.totalArtigos} artigos` : '📚 CLT: não importada';
   $('#lawyerStatus').textContent = `para ${S.escritorio.advogados.map((a) => a.nome).join(' e ')}`;
 
   // seletor de conversas

@@ -6,6 +6,7 @@ import { handleMessage, runFollowups } from './agent/flow.js';
 import { dashboard, enviarRelatorio } from './report.js';
 import { providerInfo } from './llm/index.js';
 import { parseWebhook, sendText } from './channels/evolution.js';
+import { info as cltInfo } from './knowledge/clt.js';
 
 let ultimoRelatorio = null;
 
@@ -22,7 +23,7 @@ export function tick() {
 export function state(tz = process.env.TZ) {
   const db = store.getDb();
   return {
-    escritorio, tz, now: clock.now().toISOString(), ia: providerInfo(),
+    escritorio, tz, now: clock.now().toISOString(), ia: providerInfo(), conhecimento: cltInfo(),
     leads: store.allLeads().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     lawyerInbox: db.lawyerInbox, appointments: db.appointments, dashboard: dashboard(),
   };

@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "demo": "node scripts/demo.js",
     "test": "node --test test/*.test.js",
-    "build:standalone": "node scripts/build-standalone.mjs"
+    "build:standalone": "node scripts/build-standalone.mjs",
+    "ingest:clt": "node scripts/ingest-clt.js"
   },
   "engines": {
     "node": ">=20"

@@ -5,6 +5,7 @@ import { dicaConversao } from './nurture.js';
 import { complete } from '../llm/index.js';
 import { SYSTEM_PROMPT } from './prompt.js';
 import { formatar } from '../calendar.js';
+import { fundamentos, contextoLLM } from '../knowledge/clt.js';
 
 const EMOJI = { quente: '🔥', morno: '🌤️', frio: '❄️' };
 const brl = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
@@ -48,12 +49,14 @@ export async function gerarBriefing(lead, { motivo = 'Consulta agendada' } = {})
     `📊 *Score:* ${c.score}/100 · honorários potenciais ${brl(c.valorPotencial.min)}–${brl(c.valorPotencial.max)}`,
     `🔎 *Por quê:* ${c.motivos.join('; ')}`,
   ];
+  const base = fundamentos(d.problemas, { desligado: d.situacao === 'desligado' });
+  if (base.length) linhas.push('', '📚 *Base legal (CLT):*', ...base.map((f) => `• *${f.rotulo}:* “${f.texto}”`));
   if (ap) linhas.push(`📅 *Consulta:* ${formatar(ap.inicio)} com ${ap.advogado} — ${ap.modalidade}`);
   if (relato) linhas.push('', `💬 *Relato do cliente:* "${relato}"`);
 
   const resumoIA = await complete({
     tier: 'pro',
-    system: SYSTEM_PROMPT + '\n\nAgora você escreve para o ADVOGADO, não para o cliente.',
+    system: SYSTEM_PROMPT + '\n\nAgora você escreve para o ADVOGADO, não para o cliente. Cite artigos da CLT apenas se estiverem nos trechos fornecidos.\n\n' + contextoLLM(d.problemas, relato),
     prompt: `Com base na conversa abaixo, escreva em até 3 linhas: (1) resumo técnico do caso com possíveis pedidos ` +
       `(ex.: verbas rescisórias, multa do 477, horas extras, danos morais) e (2) o que confirmar na consulta. Sem markdown pesado.\n\n` +
       lead.messages.map((m) => `${m.from === 'lead' ? 'Cliente' : 'Agente'}: ${m.text}`).join('\n'),

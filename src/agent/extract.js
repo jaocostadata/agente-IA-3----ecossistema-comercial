@@ -137,6 +137,7 @@ export const INTENCOES = {
   urgencia: /(urgente|urgencia|o quanto antes|rapido|hoje mesmo|desesper|socorro)/,
   duvida: /(so uma duvida|so queria saber|curiosidade|so pra saber|pergunta rapida|so tirar uma duvida)/,
   sair: /(nao quero mais|pare de|para de mandar|sair da lista|descadastr|nao tenho interesse|nao me mande)/,
+  lei: /(o que (diz|fala) a lei|qual (e )?(o )?artigo|que artigo|base legal|a lei (diz|fala|garante)|segundo a (lei|clt)|\bclt\b.*(diz|fala)|esta na (lei|clt)|tem lei)/,
   sim: /^(sim|s|isso|claro|quero|pode ser|pode|ok|beleza|bora|com certeza|aham|uhum|quero sim|sim quero|tenho interesse)\b/,
   nao: /^(nao|n|agora nao|depois|mais tarde|talvez depois|ainda nao)\b/,
 };

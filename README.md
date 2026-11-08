@@ -93,6 +93,29 @@ Para testar o webhook como se fosse a Evolution API:
 curl -X POST localhost:3000/webhook/evolution -H 'content-type: application/json' -d '{"event":"messages.upsert","instance":"escritorio","data":{"key":{"remoteJid":"5583999990000@s.whatsapp.net","fromMe":false},"pushName":"Marcos","message":{"conversation":"Oi, fui demitido ontem e não me pagaram nada"}}}'
 ```
 
+## Base de conhecimento: CLT
+
+O agente usa o texto oficial da **CLT** ([planalto.gov.br](https://www.planalto.gov.br/ccivil_03/decreto-lei/del5452compilado.htm)) como base de conhecimento:
+
+- **Briefing ao advogado:** seção "📚 Base legal (CLT)" com os artigos do tema do lead (ex.: rescisão → art. 477, §§ 6º e 8º; justa causa → art. 482; gestante → art. 391-A) e o art. 11 (prescrição) quando o lead já saiu da empresa.
+- **Cliente pergunta "o que diz a lei?"**: o agente responde com o trecho do artigo e avisa que é um texto informativo.
+- **Mensagem educativa:** cita o artigo correspondente.
+- **IA (quando configurada):** os artigos relevantes vão como contexto no prompt, e a IA só cita artigos que estão nesse contexto.
+
+Importação (separa o texto em artigos, remove o texto revogado/tachado e as notas de redação):
+
+```bash
+npm run ingest:clt
+```
+
+Se o download falhar, salve a página no navegador (Ctrl+S → "Página da Web, somente HTML") e rode:
+
+```bash
+node scripts/ingest-clt.js caminho/para/del5452compilado.htm
+```
+
+O resultado vai para `src/knowledge/clt-data.js`. Enquanto a CLT não for importada, o agente funciona normalmente, só que sem citar artigos. O topo da demo mostra "📚 CLT: N artigos" ou "não importada".
+
 ## Personalizar para outro escritório
 
 Edite `src/config.js` (nome, advogados, OAB, endereço, horários de consulta) e, se quiser, os textos de nutrição em `src/agent/nurture.js`.
@@ -110,6 +133,7 @@ src/
   agent/briefing.js    briefing e alerta para o advogado
   agent/nurture.js     conteúdo educativo, documentos, dicas de conversão
   agent/prompt.js      system prompt (LLM)
+  knowledge/           CLT: importador (parse-clt.js), busca/citações (clt.js), dados (clt-data.js)
   llm/                 roteador Gemini/Claude com fallback offline
   report.js            relatório diário 8h + métricas do dashboard
   calendar.js          agenda (mock Google Calendar)
