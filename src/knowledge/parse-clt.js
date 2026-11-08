@@ -14,7 +14,9 @@ export function decodeHtmlBuffer(buf) {
 export function htmlToLines(html) {
   let s = html
     .replace(/<(script|style|head)[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/\r?\n/g, ' ')                                          // quebras do código-fonte não são parágrafos
     .replace(/<(strike|s|del)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')       // texto revogado
+    .replace(/<span\b[^>]*line-through[^>]*>[\s\S]*?<\/span>/gi, ' ') // revogado via CSS
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/(p|div|tr|li|h\d|table)>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
@@ -22,11 +24,16 @@ export function htmlToLines(html) {
     .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
     .replace(/&([a-z]+);/gi, (m, n) => ENT[n.toLowerCase()] ?? ENT[n] ?? m);
   // notas de redação/vigência entre parênteses
-  s = s.replace(/\((?:\s*)(?:Reda[çc][ãa]o dada|Inclu[ií]d[oa]|Acrescentad[oa]|Acrescid[oa]|Renumerad[oa]|Vide|Vig[êe]ncia|Produ[çc][ãa]o de efeitos?|Regulamento|Express[ãa]o|Par[áa]grafo renumerado|Revigorad[oa])[^)]*\)/gi, ' ');
-  return s.split('\n').map((l) => l.replace(/[ \t ]+/g, ' ').trim()).filter(Boolean);
+  s = s.replace(/\((?:\s*)(?:Reda[çc][ãa]o dada|Inclu[ií]d[oa]|Acrescentad[oa]|Acrescid[oa]|Renumerad[oa]|Vide|Vig[êe]ncia|Produ[çc][ãa]o de efeitos?|Regulamento|Express[ãa]o|Par[áa]grafo renumerado|Revigorad[oa])[^)\n]{0,300}\)?/gi, ' '); // nunca atravessa o parágrafo (o site tem notas sem ')')
+  return s.split('\n')
+    .map((l) => l.replace(/[ \t\u00a0]+/g, ' ').trim()
+      .replace(/^(§\s*\d+)\s+o\b/, '$1º')                 // "§ 6 o" (º sobrescrito) -> "§ 6º"
+      .replace(/^(Art\.\s*\d+)\s+o\b/, '$1º'))
+    .filter((l) => l && !/^([IVXLC]+|[a-z])\s*[-–)]\s*\(\s*(revogad|vetad)[oa][^)]*\)\s*[;.]?$/i.test(l)); // incisos/alíneas revogados
 }
 
-const RE_ART = /^Art\.?\s*(\d{1,4}(?:\.\d{3})?)\s*[º°o]?\s*(?:-\s*([A-Z]{1,2})\b)?\s*[.\-–—:]?\s*(.*)$/;
+// sufixo colado ao número ("477-A"); "Art. 58 - A duração" NÃO é 58-A
+const RE_ART = /^Art\.?(?:\s*\.)*\s*(\d{1,4}(?:\.\d{3})?)\s*[º°o]?(?:-([A-Z]{1,2})(?![A-Za-zÀ-ÿ]))?\s*[.\-–—:]?\s*(.*)$/;
 const RE_PAR = /^(§\s*(\d+)\s*[º°o]?|Par[áa]grafo [úu]nico)\s*[.\-–—:]?\s*(.*)$/i;
 const RE_TIT = /^(T[ÍI]TULO|CAP[ÍI]TULO|SE[ÇC][ÃA]O|SUBSE[ÇC][ÃA]O)\s+([IVXLC]+(?:-[A-Z])?|[ÚU]NIC[OA])\b/i;
 
@@ -63,7 +70,7 @@ export function parseClt(html, { fonte = 'https://www.planalto.gov.br/ccivil_03/
     if (a) {
       fechar();
       const numero = a[1].replace('.', '') + (a[2] ? '-' + a[2] : '');
-      atual = { numero, titulo: ctx.titulo, capitulo: ctx.capitulo, secao: ctx.secao, resto: a[3], paragrafos: [{ id: 'caput', texto: `Art. ${numero}. ${a[3]}`.trim() }] };
+      atual = { numero, titulo: ctx.titulo, capitulo: ctx.capitulo, secao: ctx.secao, resto: a[3], paragrafos: [{ id: 'caput', texto: `Art. ${numero}${/^\d$/.test(numero) ? 'º' : '.'} ${a[3]}`.trim() }] };
       continue;
     }
     if (!atual) continue;

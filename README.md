@@ -114,7 +114,9 @@ Se o download falhar, salve a página no navegador (Ctrl+S → "Página da Web, 
 node scripts/ingest-clt.js caminho/para/del5452compilado.htm
 ```
 
-O resultado vai para `src/knowledge/clt-data.js`. Enquanto a CLT não for importada, o agente funciona normalmente, só que sem citar artigos. O topo da demo mostra "📚 CLT: N artigos" ou "não importada".
+O resultado vai para `src/knowledge/clt-data.js`. O topo da demo mostra "📚 CLT: N artigos" (ou "não importada", caso em que o agente funciona sem citar artigos).
+
+**Texto atualmente importado:** 850 artigos vigentes (os números ausentes entre 1 e 922 são revogados ou vetados). Origem: página oficial `del5452compilado.htm` do Planalto, na cópia byte a byte salva em 18/06/2026 pelo projeto [Pantani/jusRAG](https://github.com/Pantani/jusRAG) (`data/seed/labor_clt/_source/planalto_del5452compilado.html`, SHA-256 `4a549cb45e200d1408ca20aabe59422f81e1f6305133cfc2b9827224e7bb7d4d`), porque o site do Planalto recusa conexões vindas do servidor em nuvem usado aqui. Alterações na CLT publicadas depois dessa data não estão incluídas: para atualizar, rode `npm run ingest:clt` numa máquina que acesse o Planalto.
 
 ## Personalizar para outro escritório
 

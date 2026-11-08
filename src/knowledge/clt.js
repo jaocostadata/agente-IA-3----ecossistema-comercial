@@ -15,12 +15,12 @@ const tokens = (s) => norm(s).split(/[^a-z0-9]+/).filter((t) => t.length > 2 && 
 // Temas do agente -> artigos da CLT mais pertinentes (o texto vem da base importada).
 export const REFERENCIAS = {
   verbas_rescisorias: [{ art: '477', par: '§6' }, { art: '477', par: '§8' }, { art: '467' }],
-  horas_extras: [{ art: '58' }, { art: '59' }, { art: '71' }],
+  horas_extras: [{ art: '59', par: '§1' }, { art: '58' }, { art: '71' }],
   sem_carteira: [{ art: '3' }, { art: '29' }, { art: '41' }],
   assedio: [{ art: '483' }, { art: '223-B' }, { art: '223-C' }],
   acidente_doenca: [{ art: '157' }, { art: '166' }],
   justa_causa: [{ art: '482' }],
-  fgts: [{ art: '477' }],
+  ferias: [{ art: '129' }, { art: '134' }, { art: '137' }],  // FGTS: Lei 8.036/1990, fora da CLT
   insalubridade: [{ art: '189' }, { art: '192' }, { art: '193' }],
   gestante: [{ art: '391-A' }, { art: '392' }],
   prescricao: [{ art: '11' }],
@@ -56,7 +56,7 @@ export function trecho(ref, max = 260) {
   if (!p) return null;
   let t = p.texto.replace(/\s+/g, ' ').trim();
   if (t.length > max) t = t.slice(0, max).replace(/\s+\S*$/, '') + '…';
-  return { rotulo: `Art. ${a.numero}${ref.par ? (ref.par === 'pu' ? ', parágrafo único' : ', ' + ref.par.replace('§', '§ ') + 'º') : ''}`, texto: t, artigo: a.numero };
+  return { rotulo: `Art. ${a.numero}${/^\d$/.test(a.numero) ? 'º' : ''}${ref.par ? (ref.par === 'pu' ? ', parágrafo único' : ', ' + ref.par.replace('§', '§ ') + 'º') : ''}`, texto: t, artigo: a.numero };
 }
 
 export function buscar(consulta, k = 3) {

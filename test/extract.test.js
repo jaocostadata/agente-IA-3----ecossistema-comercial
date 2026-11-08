@@ -19,6 +19,7 @@ test('problemas e situação', () => {
   assert.equal(extractAll('ainda trabalho lá e faço hora extra', REF).situacao, 'empregado');
   assert.ok(extractAll('a empresa nunca assinou minha carteira', REF).problemas.includes('sem_carteira'));
   assert.ok(extractAll('sofri um acidente e estou afastado pelo INSS', REF).problemas.includes('acidente_doenca'));
+  assert.ok(extractAll('faz 2 anos que não tiro férias', REF).problemas.includes('ferias'));
 });
 
 test('datas e durações', () => {

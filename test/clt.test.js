@@ -18,7 +18,8 @@ const HTML = `<html><head><meta http-equiv="Content-Type" content="text/html; ch
 <p>Art. 391-A.&nbsp; Marcador gestante estabilidade confirmação gravidez. (Incluído pela Lei nº 12.812, de 2013)</p>
 <p>Parágrafo único. Marcador parágrafo único adoção.</p>
 <p>Art. 5º (Revogado pela Lei nº 9.999, de 2000)</p>
-<p>Art. 58 - Marcador duração jornada oito horas.</p>
+<p>Art. 58 - A marcador duração jornada oito horas.</p>
+<p>Art. 58-A.&nbsp; Marcador tempo parcial.</p>
 </body></html>`;
 
 const buf = Buffer.from(new TextDecoder('utf-8').decode(Buffer.from(HTML)), 'latin1');
@@ -28,7 +29,7 @@ test('parser: decodifica windows-1252, remove revogado e notas, separa parágraf
   assert.match(html, /TÍTULO IV/);
   const d = parseClt(html);
   const nums = d.artigos.map((a) => a.numero);
-  assert.deepEqual(nums, ['58', '391-A', '477', '482']); // art. 5º revogado fica de fora
+  assert.deepEqual(nums, ['58', '58-A', '391-A', '477', '482']); // "Art. 58 - A ..." não vira 58-A // art. 5º revogado fica de fora
   const a477 = d.artigos.find((a) => a.numero === '477');
   assert.ok(!/antiga revogada/.test(a477.texto), 'texto tachado removido');
   assert.ok(!/Redação dada/.test(a477.texto), 'notas de redação removidas');

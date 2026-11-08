@@ -8,10 +8,24 @@ export const CONTEUDO = {
   assedio: 'Situações de humilhação ou constrangimento no trabalho podem gerar indenização por danos morais. Guardar prints, áudios e nomes de testemunhas ajuda muito.',
   acidente_doenca: 'Em acidente ou doença ligada ao trabalho pode haver estabilidade de 12 meses após o retorno do INSS e, dependendo do caso, indenização.',
   justa_causa: 'A justa causa precisa ser comprovada pela empresa. Quando é revertida na Justiça, você pode receber as verbas de uma dispensa sem justa causa.',
+  ferias: 'Depois de 12 meses de trabalho você tem direito a férias, que devem ser concedidas nos 12 meses seguintes; se a empresa passar desse prazo, a lei prevê pagamento em dobro (art. 137 da CLT).',
   fgts: 'Você pode consultar os depósitos do FGTS pelo app FGTS. Depósitos faltando podem ser cobrados da empresa.',
   insalubridade: 'Quem trabalha exposto a agentes nocivos pode ter direito a adicional de insalubridade (10% a 40%) ou periculosidade (30%).',
   gestante: 'A gestante tem estabilidade desde a confirmação da gravidez até 5 meses após o parto, mesmo que a empresa não soubesse.',
   outros: 'Cada caso trabalhista tem detalhes que fazem diferença — por isso a análise do advogado é importante.',
+};
+
+// Artigo da CLT que sustenta cada mensagem educativa acima (só onde a CLT é a fonte da afirmação).
+// Acidente/estabilidade (Lei 8.213/91) e FGTS (Lei 8.036/90) ficam sem citação da CLT.
+export const CITACAO = {
+  verbas_rescisorias: { art: '477', par: '§6' },
+  horas_extras: { art: '59', par: '§1' },
+  sem_carteira: { art: '3' },
+  assedio: { art: '223-B' },
+  justa_causa: { art: '482' },
+  insalubridade: { art: '192' },
+  gestante: { art: '391-A' },
+  ferias: { art: '137' },
 };
 
 export const DOCUMENTOS = {
@@ -23,6 +37,7 @@ export const DOCUMENTOS = {
   acidente_doenca: ['Atestados e laudos médicos', 'CAT (Comunicação de Acidente de Trabalho), se houver', 'Documentos do INSS'],
   justa_causa: ['Carta/comunicado de justa causa', 'Advertências e suspensões recebidas'],
   fgts: ['Extrato do FGTS (app FGTS)'],
+  ferias: ['Avisos e recibos de férias', 'Contracheques dos meses de férias'],
   insalubridade: ['Fotos do ambiente de trabalho', 'Comprovantes de EPI recebidos'],
   gestante: ['Exames/ultrassom com a data da gravidez'],
 };

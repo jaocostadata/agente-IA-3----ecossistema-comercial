@@ -18,6 +18,7 @@ export const PROBLEMAS = {
   justa_causa: { label: 'Demissão por justa causa (reversão)', peso: 20,
     re: /(justa causa)/ },
   fgts: { label: 'FGTS não depositado', peso: 15, re: /(fgts|fundo de garantia)/ },
+  ferias: { label: 'Férias não concedidas/não pagas', peso: 15, re: /(ferias)/ },
   insalubridade: { label: 'Insalubridade/periculosidade', peso: 15, re: /(insalubr|pericul|produto quimico|barulho|ruido)/ },
   gestante: { label: 'Estabilidade gestante', peso: 25, re: /(gravida|gestante|gravidez|licenca maternidade)/ },
 };

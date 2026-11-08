@@ -9,6 +9,7 @@ export const SCENARIOS = [
       'trabalhei 3 anos lá',
       'sim, era assinada',
       'tenho os contracheques e as mensagens do RH dizendo que iam pagar',
+      'o que diz a lei sobre isso?',
       '1',
     ],
   },

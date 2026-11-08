@@ -5,7 +5,7 @@ import { now, HOUR, DAY } from '../clock.js';
 import { getLead, upsertLead, pushLawyer, logEvent, allLeads } from '../store.js';
 import { extractAll, norm, PROBLEMAS, extractProvas } from './extract.js';
 import { classify } from './classify.js';
-import { CONTEUDO, checklist } from './nurture.js';
+import { CONTEUDO, CITACAO, checklist } from './nurture.js';
 import { gerarBriefing, alertaUrgente, problemasTxt, fmtMeses } from './briefing.js';
 import { proximosHorarios, agendar, formatar } from '../calendar.js';
 import { complete, completeJson } from '../llm/index.js';
@@ -182,7 +182,7 @@ function finalizar(lead) {
   } else if (c.prescricao?.status === 'critico') {
     out.push(`⚠️ *Atenção:* a lei dá 2 anos após a saída para entrar com a ação, e no seu caso restam cerca de *${fmtMeses(c.prescricao.mesesRestantes)}*. Por isso vou priorizar o seu atendimento.`);
   } else {
-    const f = fundamentos([p], { max: 1 })[0];
+    const f = CITACAO[p] ? trecho(CITACAO[p]) : null;
     out.push(`💡 Uma informação importante: ${CONTEUDO[p]}${f ? `\n📖 Base legal: ${f.rotulo.replace('Art.', 'art.')} da CLT.` : ''}`);
   }
   if (!d.provas && c.temperatura !== 'frio') out.push('Dica: se puder, comece a reunir prints, contracheques e nomes de colegas que viram o que aconteceu. Isso ajuda muito na análise.');
