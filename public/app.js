@@ -1,8 +1,10 @@
-import { SCENARIOS } from '/scenarios.js';
+import { SCENARIOS } from './scenarios.js';
 
 const $ = (s) => document.querySelector(s);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// Na versão standalone (arquivo HTML único) a API roda dentro do próprio navegador.
 const api = async (path, body) => {
+  if (window.SINAPTA_API) return window.SINAPTA_API(path, body);
   const r = await fetch(path, body === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   return r.json();
 };
@@ -30,6 +32,11 @@ function bubble(dir, text, at, tag) {
 }
 
 function renderChat(el, items) {
+  // só redesenha quando há mudança (evita "piscar" a cada atualização automática)
+  const last = items.at(-1);
+  const sig = `${items.length}|${last?.at}|${last?.text.length}|${S?.tz}`;
+  if (el._sig === sig && !el.querySelector('.empty')) return;
+  el._sig = sig;
   el.innerHTML = '';
   let lastDay = '';
   for (const it of items) {
@@ -63,13 +70,13 @@ function render() {
   $('#leadStatus').textContent = lead ? `conversa com ${lead.data.nome || lead.pushName || '+' + lead.phone} · ${STAGE_LABEL[lead.stage] || lead.stage}` : 'online · responde 24h';
   if (!busy) {
     if (lead) renderChat($('#leadChat'), lead.messages.map((m) => ({ dir: m.from === 'lead' ? 'out' : 'in', text: m.text, at: m.at, tag: m.followup ? { label: `Follow-up automático ${m.followup}`, cls: 'followup' } : null })));
-    else $('#leadChat').innerHTML = '<div class="empty">Escreva uma mensagem como se fosse um trabalhador procurando o escritório — ou clique em um <b>cenário</b> acima para ver uma conversa completa.</div>';
+    else { $('#leadChat')._sig = null; $('#leadChat').innerHTML = '<div class="empty">Escreva uma mensagem como se fosse um trabalhador procurando o escritório — ou clique em um <b>cenário</b> acima para ver uma conversa completa.</div>'; }
   }
 
   // WhatsApp do advogado
   const TAG = { briefing: { label: '📋 Briefing', cls: '' }, urgente: { label: '🚨 Urgente', cls: 'urgente' }, humano: { label: '🙋 Transferência', cls: 'urgente' }, relatorio: { label: '☀️ Relatório diário', cls: 'relatorio' }, nota: { label: '📝 Recado do cliente', cls: '' } };
   if (S.lawyerInbox.length) renderChat($('#lawyerChat'), S.lawyerInbox.map((m) => ({ dir: 'in', text: m.text, at: m.at, tag: TAG[m.tipo] })));
-  else $('#lawyerChat').innerHTML = '<div class="empty">Aqui chegam os <b>briefings</b> dos leads qualificados, <b>alertas de urgência</b> e o <b>relatório diário das 8h</b>.</div>';
+  else { $('#lawyerChat')._sig = null; $('#lawyerChat').innerHTML = '<div class="empty">Aqui chegam os <b>briefings</b> dos leads qualificados, <b>alertas de urgência</b> e o <b>relatório diário das 8h</b>.</div>'; }
 
   // dashboard
   const d = S.dashboard;
@@ -125,6 +132,7 @@ async function send(text, phone = current, pushName) {
     if (i < r.replies.length - 1) typing(chat, true);
   }
   typing(chat, false);
+  chat._sig = null;
   busy = false;
   await refresh();
 }
@@ -138,7 +146,7 @@ async function playScenario(s) {
     current = s.phone;
     if (S.leads.find((l) => l.phone === s.phone)) { s = { ...s, phone: s.phone.slice(0, -4) + String(Math.floor(Math.random() * 9000) + 1000) }; current = s.phone; }
     render();
-    $('#leadChat').innerHTML = '';
+    $('#leadChat').innerHTML = ''; $('#leadChat')._sig = null;
     for (const m of s.msgs) {
       await sleep(700);
       await send(m, s.phone, s.pushName);
@@ -159,7 +167,13 @@ $('#leadSelect').onchange = (e) => { current = e.target.value || null; render();
 document.querySelector('[data-hour="22"]').onclick = async () => { await api('/api/clock', { setHour: 22 }); refresh(); };
 $('#adv24').onclick = async () => { const r = await api('/api/clock', { hours: 24 }); await refresh(); flash(`${r.followupsEnviados.length} follow-up(s) enviado(s)`); };
 $('#rel8').onclick = async () => { const r = await api('/api/clock', { setHour: 8 }); if (!r.relatorio) await api('/api/report', {}); await refresh(); flash('Relatório das 8h enviado ao advogado'); };
-$('#reset').onclick = async () => { if (!confirm('Apagar todos os dados da demo?')) return; await api('/api/reset', {}); current = null; refresh(); };
+// confirmação na própria página (confirm() é bloqueado em alguns visualizadores)
+$('#reset').onclick = async (e) => {
+  const btn = e.currentTarget;
+  if (!btn.dataset.armed) { btn.dataset.armed = '1'; btn.textContent = 'Clique de novo p/ apagar'; setTimeout(() => { delete btn.dataset.armed; btn.textContent = '↺ Reiniciar'; }, 3000); return; }
+  delete btn.dataset.armed; btn.textContent = '↺ Reiniciar';
+  await api('/api/reset', {}); current = null; refresh(); flash('Demo reiniciada');
+};
 
 function flash(msg) {
   const d = document.createElement('div');
@@ -168,5 +182,5 @@ function flash(msg) {
   document.body.appendChild(d); setTimeout(() => d.remove(), 2500);
 }
 
-await refresh();
+refresh();
 setInterval(() => { if (!busy) refresh(); }, 4000);

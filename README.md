@@ -4,7 +4,15 @@ Implementação do **Agente de Atendimento** descrito na apresentação *"Ecossi
 
 ![Demo](docs/screenshots/1-rescisao.png)
 
-## Como rodar (Node.js 20+, sem dependências)
+## Jeito mais rápido: abrir o arquivo (sem instalar nada)
+
+Baixe **[`dist/sinapta-demo.html`](dist/sinapta-demo.html)** e abra com dois cliques. O agente inteiro roda dentro do navegador, sem servidor e sem internet. Para regenerar o arquivo:
+
+```bash
+npm i -D esbuild && npm run build:standalone
+```
+
+## Como rodar com servidor (Node.js 20+, sem dependências)
 
 ```bash
 npm start
@@ -93,7 +101,8 @@ Edite `src/config.js` (nome, advogados, OAB, endereço, horários de consulta) e
 
 ```
 src/
-  server.js            HTTP: simulador, API, webhook Evolution, "cron" de follow-up/relatório
+  server.js            servidor HTTP (simulador + API + webhook Evolution)
+  api.js               rotas e "cron" de follow-up/relatório (usado pelo servidor e pela versão standalone)
   config.js            dados do escritório e variáveis de ambiente
   agent/flow.js        fluxo do atendimento (máquina de estados)
   agent/extract.js     extração de dados do texto (PT-BR)
@@ -106,6 +115,8 @@ src/
   calendar.js          agenda (mock Google Calendar)
   channels/evolution.js
 public/                simulador web (WhatsApp do lead, do advogado e dashboard)
+web/standalone.js      entrada da versão que roda só no navegador
+dist/sinapta-demo.html demo em arquivo HTML único (gerado por npm run build:standalone)
 scripts/demo.js        demo no terminal
 test/                  testes (node --test)
 db/schema.sql          schema para Supabase
